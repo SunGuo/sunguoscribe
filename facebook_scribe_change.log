@@ -1,0 +1,47 @@
+2012_05_10 16:07
+	一 由于过滤使用正则过滤 导致效率低下，下载改为使用字符匹配，（Filter.cpp）
+2012_04_25 14:33
+	一 新增store(SyslogStore)使用Syslog协议向远程主机发送日志：
+		1 netprotocol 使用协议UDP/TCP，默认UDP
+		2 remoteHost  远程使用的host
+		3 remotePort 远程端口
+		4 not_useprefix 是否不用日志头 默认no ，yes（remove prefix）
+		5 usefilter yes/no 是否使用正则过滤器
+		6 log_filter_regex 正则过滤器的正则
+		7 regexfilename   黑白名单的Path
+		8 isblack         yes/no yes 黑名单 no 白名单
+	二 过滤器的配置：
+		1 not_useprefix 是否不用日志头 默认no ，yes（remove prefix）
+		2 usefilter yes/no 是否使用正则过滤器
+		3 log_filter_regex 正则过滤器的正则
+		4 regexfilename   黑白名单的Path
+		5 isblack         yes/no yes 黑名单 no 白名单
+		
+2012_04_24 13:47
+	
+	一 创建分支 
+		
+		1 rc2.1没有增加filter与syslogstore的版本
+		2 rcfilter增加了syslogstore与filter的版本
+		
+2012_01_16 14:01
+    一 把em版本以修改的版本功能移植过来包括（use_tree）
+		1 文件名修改： category-hostname_pid-yyyy_mm_dd_hh-minif_suffix
+        2 路径名：把天 小时目录移植过来
+    二 为了解决两个不同的scribe向hdfs一个目录中写文件可能产生写锁的问题，(use_hostname_as_filename)
+    	解决方案： 在文件名中增加hostname_pid的值是文件名能够唯一,这样向hdfs中写数据的时候不会有的进程被阻塞。
+    	修改源码：
+    	   1  增加参数值：use_hostname_as_filename  默认为 no   如果 yes则就会在文件名中添加 hostname_pid 的值
+    	
+    	源码改变记录：
+    	  增加变量：use_hostname_as_filename :  在配置文件中use_hostname_as_filename=yes的情况下 复制true    
+    	          hostnameFileName： 记录当前scribe进程中的 hostname_pid
+    	 增加函数 ：setHostNameFilename()获取当前进程的hostname_pid
+                      
+                      
+        测试结果：在不同的机器向hdfs同一个目录写的时候会启动两个写进程;不会引起写冲突的问题;  在127与131 启动scribe进程进行的测试
+    三  把原来发多少次重连的功能移植的facebook_scribe 上来 。
+             通过 default_max_msg_before_reconnect(发送多少条msg进行重连)
+                  allowable_delta_before_reconnect（一个随机值）
+             我们在使用的时候只是需要控制default_max_msg_before_reconnect 即可 allowable_delta_before_reconnect 用默认值（-1）程序会通过一个算法控制重连
+     
